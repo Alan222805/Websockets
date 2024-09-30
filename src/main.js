@@ -1,27 +1,19 @@
 const express = require("express");
 const { Server } = require("socket.io");
 const http = require("http");
-const { Pool } = require("pg");
+const Connection_DB = require( './Connection_DB')
+const path = require('path')
+
 
 //Crear la app de Express
 const app = express();
 const server = http.createServer(app);
 
-
-
 //Configurar socket.io
 const io = new Server(server)
 
-//Conectar a la base de datos PostgreSQL
-
-const pool = new Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "NotificacionesDB",
-    password: "AJOVJ222805",
-    port: 3306,
-});
-
+// Creando la conexion a la base de datos
+const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306).pool
 
 
 //Midleware para permitir solicitudes CORS
@@ -44,11 +36,12 @@ app.get("/notifications/:organizationId", async (req, res) =>{
     }
 })
 
+
+// Configura la carpeta 'Cliente' como carpeta estática
+app.use(express.static(path.join(__dirname, '/Cliente')));
+
 app.get("/", (req, res) =>{
-    res.sendFile(__dirname + "/index.html");
-});
-app.get("/index", (req, res) =>{
-    res.sendFile(__dirname + "/index2.html");
+    res.sendFile(path.join(__dirname, "/Cliente/index.html"));
 });
 app.get("/administrador", (req, res) =>{
     res.sendFile(__dirname + "/administrador.html");

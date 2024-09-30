@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas en tiempo real</title>
+    <style>
+        
+        .notification {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .notification-title {
+            font-weight: bold;
+        }
+        .notification-description, .notification-organizationId {
+            color: #555;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Lista de Notificaciones</h1>
+    <div id="notification-container"></div>
+
+    <script src="index.js" defer></script>
+</body>
+</html>
