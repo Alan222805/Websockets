@@ -4,6 +4,9 @@ const http = require("http");
 const Connection_DB = require( './Connection_DB')
 const path = require('path')
 
+//Importando las clases para el CRUD
+const Create = require('./Servidor/Operaciones_CRUD/Create')
+const Read = require('./Servidor/Operaciones_CRUD/Read')
 
 //Crear la app de Express
 const app = express();
@@ -11,6 +14,20 @@ const server = http.createServer(app);
 
 //Configurar socket.io
 const io = new Server(server)
+
+// Configurando las carpetas 'Cliente' y 'Administrador' como carpeta estática
+app.use(express.static(path.join(__dirname, '/Cliente')));
+app.use(express.static(path.join(__dirname, '/Administrador')));
+
+//Pagina principal en que se muestran las notificaciones
+app.get("/", (req, res) =>{
+    res.sendFile(path.join(__dirname, "/Cliente/index.html"));
+});
+
+//Ruta del formulario para crear notificaciones
+app.get("/administrador", (req, res) =>{
+    res.sendFile(__dirname + "/Administrador/administrador.html");
+});
 
 // Creando la conexion a la base de datos
 const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306).pool
@@ -21,35 +38,22 @@ const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
+//Ruta para obtener todas las notificaciones
+app.get("/notifications", async (req, res) => {
+    const read = new Read();
+    read.read_all(res)
+});
+
 // Ruta para obtener todas la notificaciones de una organización
 app.get("/notifications/:organizationId", async (req, res) =>{
     const { organizationId } = req.params;
-    try{
-        const result = await pool.query(
-            'SELECT * FROM notificaciones WHERE organization_id = $1',
-            [organizationId]
-        );
-        res.json(result.rows);
-    } catch(err){
-        console.error('Error al obtener notificaciones:', err);
-        res.status(500).json({ error: 'Error al obtener notificaciones' });
-    }
+    const read = new Read(organizationId)
+    read.read_specific(res)
 })
-
-
-// Configura la carpeta 'Cliente' como carpeta estática
-app.use(express.static(path.join(__dirname, '/Cliente')));
-
-app.get("/", (req, res) =>{
-    res.sendFile(path.join(__dirname, "/Cliente/index.html"));
-});
-app.get("/administrador", (req, res) =>{
-    res.sendFile(__dirname + "/administrador.html");
-});
 
 //Manejar conexiones de socket.io
 io.on("connection", socket =>{
-    console.log("Usuario conectado:", socket.id);
+    // console.log("Usuario conectado:", socket.id);
 
     // Cuando un usuario se conecta, el cliente le envía su organización
     socket.on("join_organization", organizationId =>{
@@ -61,14 +65,16 @@ io.on("connection", socket =>{
     socket.on("create", async data=>{
         try{
             const { id, nombre, descripcion, organizationId } = data;
+            
+            const createOperation = new Create(id, nombre, descripcion, organizationId)
+
             const result = await pool.query(
-                "INSERT INTO notificaciones (id, nombre, descripcion, organization_id) VALUES ($1, $2, $3, $4) RETURNING *",
-                [id, nombre, descripcion, organizationId]    
+                createOperation.query()    
             );
 
             //Notificar al cliente la nueva tarea
             const newNotification = result.rows[0];
-            // io.emit("new_notification", newNotification); 
+            
             
             // Emiti a todos los clientes conectados
             socket.emit("create_success");
@@ -83,7 +89,7 @@ io.on("connection", socket =>{
     });
 
 
-    //Leer (Obtener) todos los registros
+    /* //Leer (Obtener) todos los registros
     socket.on("read", async () =>{
         try{
             const result = await pool.query("SELECT * FROM Notificaciones");
@@ -118,7 +124,7 @@ io.on("connection", socket =>{
             console.error('Error al eliminar:', err);
             socket.emit('error', 'Error al eliminar notificacion');
         }
-    });
+    }); */
 
 });
 

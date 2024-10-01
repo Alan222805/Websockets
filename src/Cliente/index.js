@@ -1,7 +1,7 @@
 const socket = io();
 
 // Supongamos que obtienes el organizationId del usuario desde el backend
-const organizationId = 'org-1234'
+const organizationId = 'org-123'
 
 // Unirse a la sala de la organización
 socket.emit('join_organization', organizationId);
