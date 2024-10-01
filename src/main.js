@@ -13,7 +13,7 @@ const server = http.createServer(app);
 const io = new Server(server)
 
 // Creando la conexion a la base de datos
-const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306).pool
+const pool = new Connection_DB("sa", "localhost", "test_Notifications", "aaa", 1433).pool;
 
 
 //Midleware para permitir solicitudes CORS
