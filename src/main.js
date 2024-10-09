@@ -7,6 +7,8 @@ const path = require('path')
 //Importando las clases para el CRUD
 const Create = require('./Servidor/Operaciones_CRUD/Create')
 const Read = require('./Servidor/Operaciones_CRUD/Read')
+const Delete = require('./Servidor/Operaciones_CRUD/Delete')
+const update = require('./Servidor/Operaciones_CRUD/Update')
 
 //Crear la app de Express
 const app = express();
