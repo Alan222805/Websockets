@@ -8,7 +8,7 @@ const path = require('path')
 const Create = require('./Servidor/Operaciones_CRUD/Create')
 const Read = require('./Servidor/Operaciones_CRUD/Read')
 const Delete = require('./Servidor/Operaciones_CRUD/Delete')
-const update = require('./Servidor/Operaciones_CRUD/Update')
+const Update = require('./Servidor/Operaciones_CRUD/Update')
 
 //Crear la app de Express
 const app = express();
@@ -87,6 +87,28 @@ io.on("connection", socket =>{
         } catch(err){
             console.error("Error al crear:", err)
             socket.emit("error", "Error al crear notificación");
+        }
+    });
+
+    socket.on("update", async data=>{
+        try {
+            const { id, newTitle, newDescription, organizationId } = data;
+            const update = new Update(id, newTitle, newDescription, organizationId);
+            update.update(res);
+        } catch (error) {
+            console.error("Error al actualizar: ", err);
+            socket.emit("error", "Error al actualizar notificación");
+        }
+    });
+
+    socket.on("delete", async data=>{
+        try {
+            const { id, organization_id } = data;
+            const del = new Delete(id, organization_id);
+            del.delete(res);
+        } catch (error) {
+            console.error("Error al eliminar: ", err);
+            socket.emit("error", "Error al eliminar notificación");
         }
     });
 
