@@ -3,6 +3,7 @@ const { Server } = require("socket.io");
 const http = require("http");
 const Connection_DB = require( './Connection_DB')
 const path = require('path')
+const { verifyToken } = require('./Servidor/Operaciones_CRUD/TokenVerification') // importando el middleware
 
 //Importando las clases para el CRUD
 const Create = require('./Servidor/Operaciones_CRUD/Create')
@@ -39,13 +40,13 @@ app.use(cors());
 app.use(express.json());
 
 //Ruta para obtener todas las notificaciones
-app.get("/notifications", async (req, res) => {
+app.get("/notifications",verifyToken, async (req, res) => {
     const read = new Read();
     read.read_all(res)
 });
 
 // Ruta para obtener todas la notificaciones de una organización
-app.get("/notifications/:organizationId", async (req, res) =>{
+app.get("/notifications/:organizationId", verifyToken,  async (req, res) =>{
     const { organizationId } = req.params;
     const read = new Read(organizationId)
     read.read_specific(res)

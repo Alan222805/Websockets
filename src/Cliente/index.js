@@ -3,13 +3,28 @@ const socket = io();
 // Supongamos que obtienes el organizationId del usuario desde el backend
 const organizationId = 'org-123'
 
+// simulacion de obtencion del token
+const token = 'token-3';
+
 // Unirse a la sala de la organización
 socket.emit('join_organization', organizationId);
 
 // Funcion para cargar notificaciones anteriores de la base de datos
 async function loadPreviousNotifications(){
     try {
-        const response = await fetch(`http://localhost:3000/notifications/${organizationId}`);
+        const response = await fetch(`http://localhost:3000/notifications/${organizationId}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Incluir el token en la cabecera
+                    'Content-Type': 'application/json'
+                }
+            });
+        if (response.status === 401){
+            console.error('No autorizado: token invalido o no proporcionado')
+            return;
+        }
+
         const notifications = await response.json();
 
         notifications.forEach(notification => {
