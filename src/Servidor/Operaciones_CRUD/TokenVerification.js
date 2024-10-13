@@ -1,14 +1,14 @@
 const Connection_DB = require('../../Connection_DB');
 
-const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306).pool
-const db = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306)
+const pool = new Connection_DB().pool;
+const db = new Connection_DB();
 
 
 //Middleware para verificar el token
 async function verifyToken(req, res, next){
     //Extraer el token del header Authorization
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
     if(!token){
         return res.status(401).json({error: 'Token no proporcionado'})

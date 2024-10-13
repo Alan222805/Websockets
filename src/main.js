@@ -8,6 +8,8 @@ const { verifyToken } = require('./Servidor/Operaciones_CRUD/TokenVerification')
 //Importando las clases para el CRUD
 const Create = require('./Servidor/Operaciones_CRUD/Create')
 const Read = require('./Servidor/Operaciones_CRUD/Read')
+const Delete = require('./Servidor/Operaciones_CRUD/Delete')
+const Update = require('./Servidor/Operaciones_CRUD/Update')
 
 //Crear la app de Express
 const app = express();
@@ -31,7 +33,7 @@ app.get("/administrador", (req, res) =>{
 });
 
 // Creando la conexion a la base de datos
-const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306).pool
+const pool = new Connection_DB().pool
 
 
 //Midleware para permitir solicitudes CORS
@@ -84,6 +86,28 @@ io.on("connection", socket =>{
             await create.createNotification(pool, io, socket.id);
         }catch(err){
             console.error(err.message);
+        }
+    });
+
+    socket.on("update", async data=>{
+        try {
+            const { id, newTitle, newDescription, organizationId } = data;
+            const update = new Update(id, newTitle, newDescription, organizationId);
+            update.update(res);
+        } catch (error) {
+            console.error("Error al actualizar: ", err);
+            socket.emit("error", "Error al actualizar notificación");
+        }
+    });
+
+    socket.on("delete", async data=>{
+        try {
+            const { id, organization_id } = data;
+            const del = new Delete(id, organization_id);
+            del.delete(res);
+        } catch (error) {
+            console.error("Error al eliminar: ", err);
+            socket.emit("error", "Error al eliminar notificación");
         }
     });
 

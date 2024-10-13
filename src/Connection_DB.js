@@ -2,13 +2,13 @@ const { Pool } = require("pg");
 
 
 class Connection_DB{
-    constructor(user, host, database, password, port){
+    constructor(){
         this.pool = new Pool({
-            user: user,
-            host: host,
-            database: database,
-            password: password,
-            port: port,
+            user: "postgres",
+            host: "localhost",
+            database: "NotificacionesDB",
+            password: "AJOVJ222805",
+            port: 3306,
         });
     }
 
