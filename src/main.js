@@ -42,13 +42,13 @@ app.use(cors());
 app.use(express.json());
 
 //Ruta para obtener todas las notificaciones
-app.get("/notifications",verifyToken, async (req, res) => {
+app.get("/notifications", async (req, res) => {
     const read = new Read();
     read.read_all(res)
 });
 
 // Ruta para obtener todas la notificaciones de una organización
-app.get("/notifications/:organizationId", verifyToken,  async (req, res) =>{
+app.get("/notifications/:organizationId",  async (req, res) =>{
     const { organizationId } = req.params;
     const read = new Read(organizationId)
     read.read_specific(res)
@@ -65,31 +65,20 @@ io.on("connection", socket =>{
     });
     
     // Crear (Insertar) un registro como administrador
-    socket.on("create", async data=>{
-        try{
-            const { id, nombre, descripcion, organizationId } = data;
-            
-            const createOperation = new Create(id, nombre, descripcion, organizationId)
-
-            const result = await pool.query(
-                createOperation.query()    
-            );
-
-            //Notificar al cliente la nueva tarea
-            const newNotification = result.rows[0];
-            
-            
-            // Emiti a todos los clientes conectados
+    socket.on("create", async (data) => {
+        try {
+            const { id, title, description, organizationId } = data;
+            const operation = new Create(id, title, description, organizationId);
+            const newNotification = await operation.createNotification();
             socket.emit("create_success");
-
-            //Emitir la nueva notificacion solo a la sala de la organización correspondiente
-            io.to(organizationId).emit("new_notification", newNotification)
-
-        } catch(err){
-            console.error("Error al crear:", err)
-            socket.emit("error", "Error al crear notificación");
+            io.to(organizationId).emit("new_notification", newNotification);
+            
+        } catch (err) {
+            console.error("Error al crear la notificación:", err);
+            socket.emit("error", "Error al crear la notificación");
         }
     });
+    
 
     socket.on("update", async data=>{
         try {
@@ -152,6 +141,70 @@ io.on("connection", socket =>{
     }); */
 
 });
+
+// Endpoints para el CRUD
+app.post('/notifications/create', async (req, res) => {
+    try {
+        const { id, nombre: title, descripcion: description, organizationId } = req.body;
+        const operation = new Create(id, title, description, organizationId);
+        const newNotification = await operation.createNotification();
+        res.status(201).json(newNotification);
+        io.to(organizationId).emit("new_notification", newNotification);
+
+    } catch (err) {
+        console.error("Error al crear la notificación:", err);
+        res.status(500).json({ error: "Error al crear la notificación" });
+    }
+});
+
+app.delete('/notifications/delete', async (req, res) => {
+    try {
+        const { id, organizationId } = req.body;
+        const operation = new Delete(id, organizationId);
+        const deletedNotification = await operation.deleteNotification(res);
+        res.status(200).json(deletedNotification);
+        io.to(organizationId).emit("notification_deleted", deletedNotification);
+
+    } catch (error) {
+        console.error("Error al eliminar la notificación:", error);
+        res.status(500).json({ error: "Error al eliminar la notificación" });
+    }
+});
+
+app.put('/notifications/update', async (req, res) => {
+    try {
+        const { id, nombre: title, descripcion: description, organizationId } = req.body;
+        const operation = new Update(id, title, description, organizationId);
+        const updatedNotification = await operation.updateNotification();
+        res.status(200).json(updatedNotification);
+        io.to(organizationId).emit("notification_updated", updatedNotification);
+
+    } catch (error) {
+       console.error("Error al modificar la notificacion: ", error);
+       res.status(500).json({ error: "Error al modificar la notificacion"});
+    }
+});
+
+app.patch('/notifications/patch', async (req, res) => {
+    try {
+        const { id, organizationId, fieldToUpdate, newValue } = req.body;
+
+        if (!['nombre', 'descripcion'].includes(fieldToUpdate)) {
+            return res.status(400).json({ error: "Campo no válido para actualizar" });
+        }
+
+        const operation = new Update(id, null, null, organizationId); // Sólo necesitamos el id y el organizationId
+        const updatedNotification = await operation.patch(fieldToUpdate, newValue);
+
+        res.status(200).json(updatedNotification);
+        io.to(organizationId).emit("notification_updated", updatedNotification);
+
+    } catch (err) {
+        console.error("Error al hacer PATCH en la notificación:", err);
+        res.status(500).json({ error: "Error al actualizar parcialmente la notificación" });
+    }
+});
+
 
 // Iniciar el servidor
 server.listen(3000, () => {
