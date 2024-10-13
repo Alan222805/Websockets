@@ -46,6 +46,17 @@ socket.on('new_notification', (notification) => {
     addnotificationToDOM(notification);
 });
 
+// Eschucar cuando se elimina una notificacion
+socket.on('notification_deleted', (notification) => {
+    console.log('Notificacion eliminada: ', notification);
+    removeNotificationFromDOM(notification.id);
+})
+
+socket.on('notification_updated', (notification) => {
+    console.log('Notificacion actualizada', notification);
+    updateNotificationOnDOM(notification.id);
+})
+
 // Función para agregar tarea al DOM
 function addnotificationToDOM(notification) {
     const notificationContainer = document.getElementById('notification-container');
@@ -53,6 +64,7 @@ function addnotificationToDOM(notification) {
     // Crear el contenedor de la tarea
     const notificationElement = document.createElement('div');
     notificationElement.classList.add('notification');
+    notificationElement.setAttribute('data-id', notification.id);
 
     // Título de la tarea
     const titleElement = document.createElement('div');
@@ -76,4 +88,49 @@ function addnotificationToDOM(notification) {
 
     // Añadir la nueva tarea al contenedor de tareas
     notificationContainer.appendChild(notificationElement);
+}
+
+function removeNotificationFromDOM(notificationId) {
+    // Obtener el contenedor que contiene todas las notificaciones
+    const notificationContainer = document.getElementById('notification-container');
+    
+    // Buscar la notificación específica usando el id de la notificación
+    const notificationElement = document.querySelector(`.notification[data-id='${notificationId}']`);
+    
+    // Si se encuentra la notificación, eliminarla del DOM
+    if (notificationElement) {
+        notificationContainer.removeChild(notificationElement);
+    } else {
+        console.warn(`No se encontró la notificación con id: ${notificationId}`);
+    }
+}
+
+function updateNotificationOnDOM(notificationId) {
+    const notificationContainer = document.getElementById('notification-container');
+    const notificationElement = document.querySelector(`.notification[data-id='${notificationId}']`);
+
+    if (notificationElement) {
+        // Título de la tarea
+        const titleElement = document.createElement('div');
+        titleElement.classList.add('notification-title');
+        titleElement.textContent = notification.nombre;
+
+        // Descripción de la tarea
+        const descriptionElement = document.createElement('div');
+        descriptionElement.classList.add('notification-description');
+        descriptionElement.textContent = notification.descripcion;
+
+        // Id de la organización
+        const organizationElement = document.createElement('div');
+        organizationElement.classList.add('notification-organizationId');
+        organizationElement.textContent = notification.organization_id;
+
+        // Añadir el título y la descripción al contenedor de la notificacion
+        notificationElement.appendChild(titleElement);
+        notificationElement.appendChild(descriptionElement);
+        notificationElement.appendChild(organizationElement);
+
+    } else {
+        console.warn(`No se encotro la notificacion con id: ${notificationId}`);
+    }
 }
