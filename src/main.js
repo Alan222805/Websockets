@@ -52,6 +52,19 @@ app.get("/notifications/:organizationId", verifyToken,  async (req, res) =>{
     read.read_specific(res)
 })
 
+app.post('/createNotification', async (req, res) => {
+    try{
+        const {id, nombre, descripcion, organizationId} = req.body;
+        
+        const create = new Create(id, nombre, descripcion, organizationId);
+        const newNotification = await create.createNotification(pool, io);
+        res.status(201).json(newNotification);
+    }catch(err){
+        console.error('Error en el endpoint:', err.message); // Imprime el mensaje de error
+        res.status(500).json({error: ' catch main.js --> Error al crear la notificacion'})
+    }
+})
+
 //Manejar conexiones de socket.io
 io.on("connection", socket =>{
     // console.log("Usuario conectado:", socket.id);
@@ -65,27 +78,12 @@ io.on("connection", socket =>{
     // Crear (Insertar) un registro como administrador
     socket.on("create", async data=>{
         try{
-            const { id, nombre, descripcion, organizationId } = data;
-            
-            const createOperation = new Create(id, nombre, descripcion, organizationId)
+            const {id, nombre, descripcion, organizationId} = data;
+            const create = new Create(id, nombre, descripcion, organizationId);
 
-            const result = await pool.query(
-                createOperation.query()    
-            );
-
-            //Notificar al cliente la nueva tarea
-            const newNotification = result.rows[0];
-            
-            
-            // Emiti a todos los clientes conectados
-            socket.emit("create_success");
-
-            //Emitir la nueva notificacion solo a la sala de la organización correspondiente
-            io.to(organizationId).emit("new_notification", newNotification)
-
-        } catch(err){
-            console.error("Error al crear:", err)
-            socket.emit("error", "Error al crear notificación");
+            await create.createNotification(pool, io, socket.id);
+        }catch(err){
+            console.error(err.message);
         }
     });
 
