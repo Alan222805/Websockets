@@ -32,7 +32,7 @@ app.get("/administrador", (req, res) =>{
 });
 
 // Creando la conexion a la base de datos
-const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB","AJOVJ222805", 3306).pool
+const pool = new Connection_DB().pool
 
 
 //Midleware para permitir solicitudes CORS

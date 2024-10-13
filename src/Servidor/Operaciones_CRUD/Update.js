@@ -1,7 +1,7 @@
 const Operaciones_CRUD = require('./Operaciones_CRUD');
 const Connection_DB = require('../../Connection_DB');
 
-const pool = new Connection_DB("postgres", "localhost", "NotificacionesDB", "AJOVJ222805", 3306).pool;
+const pool = new Connection_DB().pool;
 
 class Update extends Operaciones_CRUD {
     /**
