@@ -4,6 +4,7 @@ const socket = io('http://localhost:3000');
 const form = document.getElementById('create-notification-form');
 const successMessage = document.getElementById('success-message');
 const errorMessage = document.getElementById('error-message');
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.83DmfZv0PWAjcg0U9IJpmgq-SGi_usPqpB1O4PaMQRI'
 
 // Manejar el envío del formulario
 form.addEventListener('submit', (event) => {
@@ -20,6 +21,7 @@ form.addEventListener('submit', (event) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ id, nombre, descripcion, organizationId }),
     })

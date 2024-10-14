@@ -4,7 +4,7 @@ const socket = io();
 const organizationId = 'org-1234'
 
 // simulacion de obtencion del token
-const token = 'token-3';
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.83DmfZv0PWAjcg0U9IJpmgq-SGi_usPqpB1O4PaMQRI'
 
 // Unirse a la sala de la organización
 socket.emit('join_organization', organizationId);
@@ -16,8 +16,8 @@ async function loadPreviousNotifications(){
             {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Incluir el token en la cabecera
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Incluir el token en la cabecera
                 }
             });
         if (response.status === 401){

@@ -4,6 +4,13 @@ const http = require("http");
 const Connection_DB = require( './Connection_DB')
 const path = require('path')
 const { verifyToken } = require('./Servidor/Operaciones_CRUD/TokenVerification') // importando el middleware
+const jwt = require('jsonwebtoken');
+const { expressjwt: expressJwt } = require('express-jwt')
+
+const secretKey = 'alantoken'
+
+//Middleware para verificar el token JWT
+const authenticateJWT = expressJwt({ secret: secretKey, algorithms: ['HS256']})
 
 //Importando las clases para el CRUD
 const Create = require('./Servidor/Operaciones_CRUD/Create')
@@ -42,19 +49,19 @@ app.use(cors());
 app.use(express.json());
 
 //Ruta para obtener todas las notificaciones
-app.get("/notifications",verifyToken, async (req, res) => {
+app.get("/notifications",authenticateJWT, async (req, res) => {
     const read = new Read();
     read.read_all(res)
 });
 
 // Ruta para obtener todas la notificaciones de una organización
-app.get("/notifications/:organizationId", verifyToken,  async (req, res) =>{
+app.get("/notifications/:organizationId", authenticateJWT,  async (req, res) =>{
     const { organizationId } = req.params;
     const read = new Read(organizationId)
     read.read_specific(res)
 })
 
-app.post('/createNotification', async (req, res) => {
+app.post('/createNotification', authenticateJWT, async (req, res) => {
     try{
         const {id, nombre, descripcion, organizationId} = req.body;
         
