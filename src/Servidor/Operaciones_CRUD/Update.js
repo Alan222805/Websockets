@@ -1,6 +1,5 @@
 const Operaciones_CRUD = require('./Operaciones_CRUD');
 const Connection_DB = require('../../Connection_DB');
-const pool = new Connection_DB().pool;
 
 class Update extends Operaciones_CRUD {
 
@@ -18,7 +17,7 @@ class Update extends Operaciones_CRUD {
         };
     }
 
-    async updateNotification() {
+    async updateNotification(pool) {
         try {
             const result = await pool.query(this.query());
             
@@ -36,7 +35,7 @@ class Update extends Operaciones_CRUD {
         }
     }
 
-    async patch(fieldToUpdate, newValue) {
+    async patch(fieldToUpdate, newValue, pool) {
         try {
             const query = {
                 text: `UPDATE notificaciones SET ${fieldToUpdate} = $1 WHERE id = $2 AND organization_id = $3 RETURNING *`,

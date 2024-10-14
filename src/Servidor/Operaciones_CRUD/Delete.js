@@ -1,6 +1,5 @@
 const Operaciones_CRUD = require('./Operaciones_CRUD');
 const Connection_DB = require('../../Connection_DB'); // Reutilizar la conexión a la base de datos
-const pool = new Connection_DB().pool;
 
 class Delete extends Operaciones_CRUD {
 
@@ -18,7 +17,7 @@ class Delete extends Operaciones_CRUD {
     }
 
     // Método para eliminar una notificación de la base de datos
-    async deleteNotification() {
+    async deleteNotification(pool) {
         try {
             const result = await pool.query(this.query());
             

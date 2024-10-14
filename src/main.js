@@ -44,14 +44,14 @@ app.use(express.json());
 //Ruta para obtener todas las notificaciones
 app.get("/notifications", async (req, res) => {
     const read = new Read();
-    read.read_all(res)
+    read.read_all(res, pool);
 });
 
 // Ruta para obtener todas la notificaciones de una organización
 app.get("/notifications/:organizationId",  async (req, res) =>{
     const { organizationId } = req.params;
     const read = new Read(organizationId)
-    read.read_specific(res)
+    read.read_specific(res, pool);
 })
 
 //Manejar conexiones de socket.io
@@ -147,7 +147,7 @@ app.post('/notifications/create', async (req, res) => {
     try {
         const { id, nombre: title, descripcion: description, organizationId } = req.body;
         const operation = new Create(id, title, description, organizationId);
-        const newNotification = await operation.createNotification();
+        const newNotification = await operation.createNotification(pool);
         res.status(201).json(newNotification);
         io.to(organizationId).emit("new_notification", newNotification);
 
@@ -161,7 +161,7 @@ app.delete('/notifications/delete', async (req, res) => {
     try {
         const { id, organizationId } = req.body;
         const operation = new Delete(id, organizationId);
-        const deletedNotification = await operation.deleteNotification(res);
+        const deletedNotification = await operation.deleteNotification(pool);
         res.status(200).json(deletedNotification);
         io.to(organizationId).emit("notification_deleted", deletedNotification);
 
@@ -175,7 +175,7 @@ app.put('/notifications/update', async (req, res) => {
     try {
         const { id, nombre: title, descripcion: description, organizationId } = req.body;
         const operation = new Update(id, title, description, organizationId);
-        const updatedNotification = await operation.updateNotification();
+        const updatedNotification = await operation.updateNotification(pool);
         res.status(200).json(updatedNotification);
         io.to(organizationId).emit("notification_updated", updatedNotification);
 
@@ -194,7 +194,7 @@ app.patch('/notifications/patch', async (req, res) => {
         }
 
         const operation = new Update(id, null, null, organizationId); // Sólo necesitamos el id y el organizationId
-        const updatedNotification = await operation.patch(fieldToUpdate, newValue);
+        const updatedNotification = await operation.patch(fieldToUpdate, newValue, pool);
 
         res.status(200).json(updatedNotification);
         io.to(organizationId).emit("notification_updated", updatedNotification);

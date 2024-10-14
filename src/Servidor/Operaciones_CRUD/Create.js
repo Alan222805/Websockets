@@ -1,6 +1,5 @@
 const Operaciones_CRUD = require('./Operaciones_CRUD');
 const Connection_DB = require('../../Connection_DB'); // Reutilizar la conexión a la base de datos
-const pool = new Connection_DB().pool;
 
 class Create extends Operaciones_CRUD {
 
@@ -20,7 +19,7 @@ class Create extends Operaciones_CRUD {
     }
 
     // Método para crear una notificación en la base de datos
-    async createNotification() {
+    async createNotification(pool) {
         try {
             // Ejecutar la consulta y retornar el resultado
             const result = await pool.query(this.query());

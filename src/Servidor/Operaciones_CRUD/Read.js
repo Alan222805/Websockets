@@ -10,7 +10,7 @@ class Read extends Operaciones_CRUD{
     }
 
 
-    async read_specific(res){
+    async read_specific(res, pool){
         try{
             const result = await pool.query(
                 'SELECT * FROM notificaciones WHERE organization_id = $1',
@@ -23,7 +23,7 @@ class Read extends Operaciones_CRUD{
         }
     }
 
-    async read_all(res){
+    async read_all(res, pool){
         try {
             const result = await pool.query(
                 'SELECT * FROM notificaciones'
