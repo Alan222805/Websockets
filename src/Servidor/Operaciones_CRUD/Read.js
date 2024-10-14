@@ -1,6 +1,4 @@
-const { text } = require('express')
-
-const Connection_DB = require('../../Connection_DB');
+const Operaciones_CRUD = require('./Operaciones_CRUD');
 
 class Read extends Operaciones_CRUD{
     constructor(organization_id){
