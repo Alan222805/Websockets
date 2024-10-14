@@ -1,8 +1,6 @@
 const { text } = require('express')
-const Operaciones_CRUD = require('./Operaciones_CRUD')
 
 const Connection_DB = require('../../Connection_DB');
-const pool = new Connection_DB().pool
 
 class Read extends Operaciones_CRUD{
     constructor(organization_id){

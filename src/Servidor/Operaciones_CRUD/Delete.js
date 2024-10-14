@@ -1,5 +1,4 @@
 const Operaciones_CRUD = require('./Operaciones_CRUD');
-const Connection_DB = require('../../Connection_DB'); // Reutilizar la conexión a la base de datos
 
 class Delete extends Operaciones_CRUD {
 
