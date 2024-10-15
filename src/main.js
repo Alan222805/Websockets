@@ -59,7 +59,7 @@ app.get("/notifications/:organizationId", authenticateJWT,  async (req, res) =>{
     const { organizationId } = req.params;
     const read = new Read(organizationId)
     read.read_specific(res)
-})
+});
 
 app.post('/createNotification', authenticateJWT, async (req, res) => {
     try{
@@ -95,6 +95,7 @@ io.on("connection", socket =>{
             console.error(err.message);
         }
     });
+    
 
     socket.on("update", async data=>{
         try {
@@ -157,6 +158,57 @@ io.on("connection", socket =>{
     }); */
 
 });
+
+// Endpoints para el CRUD
+
+app.delete('/notifications/delete', async (req, res) => {
+    try {
+        const { id, organizationId } = req.body;
+        const operation = new Delete(id, organizationId);
+        const deletedNotification = await operation.deleteNotification(pool);
+        res.status(200).json(deletedNotification);
+        io.to(organizationId).emit("notification_deleted", deletedNotification);
+
+    } catch (error) {
+        console.error("Error al eliminar la notificación:", error);
+        res.status(500).json({ error: "Error al eliminar la notificación" });
+    }
+});
+
+app.put('/notifications/update', async (req, res) => {
+    try {
+        const { id, nombre: title, descripcion: description, organizationId } = req.body;
+        const operation = new Update(id, title, description, organizationId);
+        const updatedNotification = await operation.updateNotification(pool);
+        res.status(200).json(updatedNotification);
+        io.to(organizationId).emit("notification_updated", updatedNotification);
+
+    } catch (error) {
+       console.error("Error al modificar la notificacion: ", error);
+       res.status(500).json({ error: "Error al modificar la notificacion"});
+    }
+});
+
+app.patch('/notifications/patch', async (req, res) => {
+    try {
+        const { id, organizationId, fieldToUpdate, newValue } = req.body;
+
+        if (!['nombre', 'descripcion'].includes(fieldToUpdate)) {
+            return res.status(400).json({ error: "Campo no válido para actualizar" });
+        }
+
+        const operation = new Update(id, null, null, organizationId); // Sólo necesitamos el id y el organizationId
+        const updatedNotification = await operation.patch(fieldToUpdate, newValue, pool);
+
+        res.status(200).json(updatedNotification);
+        io.to(organizationId).emit("notification_updated", updatedNotification);
+
+    } catch (err) {
+        console.error("Error al hacer PATCH en la notificación:", err);
+        res.status(500).json({ error: "Error al actualizar parcialmente la notificación" });
+    }
+});
+
 
 // Iniciar el servidor
 server.listen(3000, () => {

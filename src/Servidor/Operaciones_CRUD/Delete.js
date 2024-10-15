@@ -1,31 +1,34 @@
 const Operaciones_CRUD = require('./Operaciones_CRUD');
-const Connection_DB = require('../../Connection_DB');
-
-const pool = new Connection_DB().pool;
 
 class Delete extends Operaciones_CRUD {
-    /**
-     *
-     */
-    constructor(id, organization_id) {
-        super(organization_id); // Llamar al constructor de la clase base con el organization_id
-        this.id = id; // ID de la notificación que queremos eliminar
+
+    constructor(notificationId, organization_id) {
+        super(organization_id);
+        this.notificationId = notificationId;
     }
 
-    async delete(res) {
+    // Método para construir la consulta de eliminación
+    query() {
+        return {
+            text: 'DELETE FROM notificaciones WHERE id = $1 AND organization_id = $2 RETURNING *',
+            values: [this.notificationId, this.organization_id]  // Usar el id de la notificación y la organización para mayor seguridad
+        };
+    }
+
+    // Método para eliminar una notificación de la base de datos
+    async deleteNotification(pool) {
         try {
-            const result = await pool.query(
-                'DELETE FROM notificaciones WHERE id = $1 AND organization_id = $2 RETURNING *',
-                [this.id, this.organization_id]
-            );
-            if (result.rowCount > 0) {
-                res.json({ message: 'Notificación eliminada con éxito', data: result.rows });
-            } else {
-                res.status(404).json({ error: 'Notificación no encontrada' });
+            const result = await pool.query(this.query());
+            
+            // Verificar si se eliminó una fila
+            if (result.rowCount === 0) {
+                throw new Error('No se encontró la notificación para eliminar');
             }
-        } catch (error) {
-            onsole.error('Error al eliminar la notificación:', err);
-            res.status(500).json({ error: 'Error al eliminar la notificación' });
+            return result.rows[0];  // Retornar la fila eliminada para confirmar
+
+        } catch (err) {
+            console.error('Error al eliminar la notificación:', err);
+            throw new Error('Error al eliminar la notificación');
         }
     }
 }
