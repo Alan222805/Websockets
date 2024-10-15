@@ -7,29 +7,40 @@ const errorMessage = document.getElementById('error-message');
 
 // Manejar el envío del formulario
 form.addEventListener('submit', (event) => {
-event.preventDefault();  // Evitar recargar la página
+    event.preventDefault();  // Evitar recargar la página
 
-// Obtener los valores del formulario
-const id = Number(document.getElementById('id').value);
-const nombre = document.getElementById('nombre').value;
-const descripcion = document.getElementById('descripcion').value;
-const organizationId = document.getElementById("organizationId").value;
+    // Obtener los valores del formulario
+    const id = Number(document.getElementById('id').value);
+    const nombre = document.getElementById('nombre').value;
+    const descripcion = document.getElementById('descripcion').value;
+    const organizationId = document.getElementById("organizationId").value;
 
-// Enviar los datos al servidor a través de socket.io
-socket.emit('create', { id, nombre, descripcion, organizationId });
-
-// Manejar la respuesta del servidor
-socket.on('create_success', (notification) => {
-    // Mostrar mensaje de éxito y limpiar el formulario
-    successMessage.style.display = 'block';
-    errorMessage.style.display = 'none';
-    form.reset();
-});
-
-socket.on('error', (message) => {
-    // Mostrar mensaje de error
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-    successMessage.style.display = 'none';
-});
+    //Enviar los datos al servidor a traves de una solicitud POST
+    fetch('http://localhost:3000/createNotification', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, nombre, descripcion, organizationId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            // Mostrar mensaje de error
+            errorMessage.textContent = data.error;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        } else {
+            // Mostrar mensaje de éxito y limpiar el formulario
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            form.reset();
+        }
+    })
+    .catch((err) => {
+        console.error('Error al enviar la solicitud:', err);
+        errorMessage.textContent = 'Error al enviar la solicitud.';
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+    });
 });

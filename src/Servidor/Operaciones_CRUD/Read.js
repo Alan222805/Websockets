@@ -1,4 +1,8 @@
-const Operaciones_CRUD = require('./Operaciones_CRUD');
+const { text } = require('express')
+const Operaciones_CRUD = require('./Operaciones_CRUD')
+
+const Connection_DB = require('../../Connection_DB');
+const pool = new Connection_DB().pool
 
 class Read extends Operaciones_CRUD{
     constructor(organization_id){
@@ -6,10 +10,10 @@ class Read extends Operaciones_CRUD{
     }
 
 
-    async read_specific(res, pool){
+    async read_specific(res){
         try{
             const result = await pool.query(
-                'SELECT * FROM notificaciones WHERE organization_id = $1',
+                'SELECT * FROM notificaciones WHERE organization_id = $1 ORDER BY id ASC',
                 [this.organization_id]
             );
             res.json(result.rows);
@@ -19,7 +23,7 @@ class Read extends Operaciones_CRUD{
         }
     }
 
-    async read_all(res, pool){
+    async read_all(res){
         try {
             const result = await pool.query(
                 'SELECT * FROM notificaciones'

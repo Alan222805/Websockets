@@ -1,7 +1,7 @@
 const socket = io();
 
 // Supongamos que obtienes el organizationId del usuario desde el backend
-const organizationId = 'org-123'
+const organizationId = 'org-1234'
 
 // simulacion de obtencion del token
 const token = 'token-3';

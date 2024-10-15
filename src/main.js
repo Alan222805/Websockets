@@ -42,16 +42,29 @@ app.use(cors());
 app.use(express.json());
 
 //Ruta para obtener todas las notificaciones
-app.get("/notifications", async (req, res) => {
+app.get("/notifications",verifyToken, async (req, res) => {
     const read = new Read();
-    read.read_all(res, pool);
+    read.read_all(res)
 });
 
 // Ruta para obtener todas la notificaciones de una organización
-app.get("/notifications/:organizationId",  async (req, res) =>{
+app.get("/notifications/:organizationId", verifyToken,  async (req, res) =>{
     const { organizationId } = req.params;
     const read = new Read(organizationId)
-    read.read_specific(res, pool);
+    read.read_specific(res)
+});
+
+app.post('/createNotification', async (req, res) => {
+    try{
+        const {id, nombre, descripcion, organizationId} = req.body;
+        
+        const create = new Create(id, nombre, descripcion, organizationId);
+        const newNotification = await create.createNotification(pool, io);
+        res.status(201).json(newNotification);
+    }catch(err){
+        console.error('Error en el endpoint:', err.message); // Imprime el mensaje de error
+        res.status(500).json({error: ' catch main.js --> Error al crear la notificacion'})
+    }
 })
 
 //Manejar conexiones de socket.io
@@ -65,17 +78,14 @@ io.on("connection", socket =>{
     });
     
     // Crear (Insertar) un registro como administrador
-    socket.on("create", async (data) => {
-        try {
-            const { id, title, description, organizationId } = data;
-            const operation = new Create(id, title, description, organizationId);
-            const newNotification = await operation.createNotification();
-            socket.emit("create_success");
-            io.to(organizationId).emit("new_notification", newNotification);
-            
-        } catch (err) {
-            console.error("Error al crear la notificación:", err);
-            socket.emit("error", "Error al crear la notificación");
+    socket.on("create", async data=>{
+        try{
+            const {id, nombre, descripcion, organizationId} = data;
+            const create = new Create(id, nombre, descripcion, organizationId);
+
+            await create.createNotification(pool, io, socket.id);
+        }catch(err){
+            console.error(err.message);
         }
     });
     
@@ -143,19 +153,6 @@ io.on("connection", socket =>{
 });
 
 // Endpoints para el CRUD
-app.post('/notifications/create', async (req, res) => {
-    try {
-        const { id, nombre: title, descripcion: description, organizationId } = req.body;
-        const operation = new Create(id, title, description, organizationId);
-        const newNotification = await operation.createNotification(pool);
-        res.status(201).json(newNotification);
-        io.to(organizationId).emit("new_notification", newNotification);
-
-    } catch (err) {
-        console.error("Error al crear la notificación:", err);
-        res.status(500).json({ error: "Error al crear la notificación" });
-    }
-});
 
 app.delete('/notifications/delete', async (req, res) => {
     try {
