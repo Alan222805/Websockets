@@ -17,7 +17,7 @@ form.addEventListener('submit', (event) => {
     const organizationId = document.getElementById("organizationId").value;
 
     //Enviar los datos al servidor a traves de una solicitud POST
-    fetch('http://localhost:3000/createNotification', {
+    fetch('http://localhost:3000/notifications/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

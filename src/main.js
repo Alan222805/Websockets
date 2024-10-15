@@ -61,7 +61,7 @@ app.get("/notifications/:organizationId", authenticateJWT,  async (req, res) =>{
     read.read_specific(res)
 });
 
-app.post('/createNotification', authenticateJWT, async (req, res) => {
+app.post('/notifications/create', authenticateJWT, async (req, res) => {
     try{
         const {id, nombre, descripcion, organizationId} = req.body;
         
