@@ -6,6 +6,7 @@ const path = require('path')
 const { verifyToken } = require('./Servidor/Operaciones_CRUD/TokenVerification') // importando el middleware
 const jwt = require('jsonwebtoken');
 const { expressjwt: expressJwt } = require('express-jwt')
+const swaggerApp = require('./Servidor/Swagger')
 
 const secretKey = 'alantoken'
 
@@ -47,6 +48,22 @@ const pool = new Connection_DB().pool
 const cors = require("cors");
 app.use(cors());
 app.use(express.json());
+app.use(swaggerApp);
+
+/**
+ * @swagger
+ * /notifications:
+ *   get:
+ *     summary: Obtiene todas las notificaciones
+ *     tags: [Notificaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de notificaciones
+ *       401:
+ *         description: No autorizado
+ */
 
 //Ruta para obtener todas las notificaciones
 app.get("/notifications",authenticateJWT, async (req, res) => {
@@ -60,6 +77,36 @@ app.get("/notifications/:organizationId", authenticateJWT,  async (req, res) =>{
     const read = new Read(organizationId)
     read.read_specific(res)
 });
+
+/**
+ * @swagger
+ * /notifications/create:
+ *   post:
+ *     summary: Crea una nueva notificación
+ *     tags: [Notificaciones]
+ *     security:
+ *          - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               nombre:
+ *                 type: string
+ *               descripcion:
+ *                 type: string
+ *               organizationId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Notificación creada exitosamente
+ *       400:
+ *         description: Error en la solicitud
+ */
 
 app.post('/notifications/create', authenticateJWT, async (req, res) => {
     try{
@@ -118,50 +165,11 @@ io.on("connection", socket =>{
             socket.emit("error", "Error al eliminar notificación");
         }
     });
-
-
-    /* //Leer (Obtener) todos los registros
-    socket.on("read", async () =>{
-        try{
-            const result = await pool.query("SELECT * FROM Notificaciones");
-            socket.emit("read_success", result.rows)
-        } catch(err){
-            console.error("Error al leer:", err);
-            socket.emit("error", "Error al leer notificaciones");
-        }
-    });
-
-    // Actualizar un registro
-    socket.on('update', async (data) => {
-        try {
-            const { id, nombre, descripcion } = data;
-            const result = await pool.query(
-                'UPDATE Notificaciones SET nombre = $1, descripcion = $2 WHERE id = $3 RETURNING *',
-                [nombre, descripcion, id]
-            );
-            socket.emit('update_success', result.rows[0]);
-        } catch (err) {
-            console.error('Error al actualizar:', err);
-            socket.emit('error', 'Error al actualizar notificacion');
-        }
-    });
-
-    // Eliminar un registro
-    socket.on('delete', async (id) => {
-        try {
-            await pool.query('DELETE FROM Notificaciones WHERE id = $1', [id]);
-            socket.emit('delete_success', id);
-        } catch (err) {
-            console.error('Error al eliminar:', err);
-            socket.emit('error', 'Error al eliminar notificacion');
-        }
-    }); */
-
 });
 
 // Endpoints para el CRUD
 
-app.delete('/notifications/delete', async (req, res) => {
+app.delete('/notifications/delete', authenticateJWT, async (req, res) => {
     try {
         const { id, organizationId } = req.body;
         const operation = new Delete(id, organizationId);
@@ -175,7 +183,7 @@ app.delete('/notifications/delete', async (req, res) => {
     }
 });
 
-app.put('/notifications/update', async (req, res) => {
+app.put('/notifications/update', authenticateJWT, async (req, res) => {
     try {
         const { id, nombre: title, descripcion: description, organizationId } = req.body;
         const operation = new Update(id, title, description, organizationId);
@@ -189,7 +197,7 @@ app.put('/notifications/update', async (req, res) => {
     }
 });
 
-app.patch('/notifications/patch', async (req, res) => {
+app.patch('/notifications/patch', authenticateJWT, async (req, res) => {
     try {
         const { id, organizationId, fieldToUpdate, newValue } = req.body;
 
